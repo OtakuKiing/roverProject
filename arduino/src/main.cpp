@@ -13,9 +13,11 @@ void loop() {
 	case 0x00:
 		motorsKill();
 		break;
-	case 0x03:
-		analogWrite(LED_PIN, target_Led_Pwm);
-		break;
+
+//	uncomment to enable direct LED control		
+//	case 0x03:
+//		analogWrite(LED_PIN, target_Led_Pwm);
+//		break;
 
 	case 0x04:
 		motor0Move(target_Dir, target_Speed);

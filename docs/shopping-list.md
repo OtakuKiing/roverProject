@@ -6,7 +6,12 @@ Most parts come from the Pi Hut, but some may be sourced from sites such as Pimo
 | Component                                                                                                    | Quantity | Cost £ |
 | ------------------------------------------------------------------------------------------------------------ | -------- | ------ |
 | **V0**                                                                                                       |          |        |
-| [12V motor w/ encoder](https://thepihut.com/products/metal-dc-geared-motor-w-encoder-12v-251rpm-18kg-cm)     | 2        | 15.90  |
+| [Arduino UNO R3](https://thepihut.com/products/arduino-uno-rev-3)																						 | 1        | 24.50  |
+| [12V motor w/ encoder](https://thepihut.com/products/metal-dc-geared-motor-w-encoder-12v-251rpm-18kg-cm)     | 2        | 31.80  |
+| [Half-size breadboard](https://thepihut.com/products/raspberry-pi-breadboard-half-size)											 | 1        | 3.00   |
+| [DuPont Wires](https://thepihut.com/products/thepihuts-jumper-bumper-pack-120pcs-dupont-wire)        		     | 1        | 6.00   |
+| [Piezo Buzzer](https://thepihut.com/products/piezo-buzzer)                                                   | 1        | 1.30   |
+| [Electrolytic Capacitors](https://thepihut.com/products/200-piece-ultimate-capacitor-kit)                    | 1        | 6.00   |
 | [Motor driver board](https://thepihut.com/products/10a-5v-30v-2-channel-dc-motor-driver)                     | 1        | 22.20  |
 | [DuPont Wires](https://thepihut.com/products/thepihuts-jumper-bumper-pack-120pcs-dupont-wire)                | 1        | 6.00   |
 | [IMU](https://thepihut.com/products/adafruit-mpu-6050-6-dof-accel-and-gyro-sensor-stemma-qt-qwiic)           | 1        | 8.00   |
