@@ -3,7 +3,7 @@
 
 
 # Example file
-import pygame, serial, time
+import pygame, serial, time, io
 
 # pygame setup
 pygame.init()
@@ -18,16 +18,21 @@ pygame.display.flip()  # update screen
 pygame.display.set_caption("Input Window")
 
 # serial setup
+header = 0
 heartbeat1 = 0
 heartbeat2 = 0
 awaiting_ACK = False
-ser = serial.Serial(port='COM4', baudrate=115200)  # open serial port @ 115200 baud
-print("Serial port: " + ser.name + "\nBaud: " + str(ser.baudrate))  # check which port and baud was really used
+raw_Ser = serial.Serial(port='COM7', baudrate=115200)  # open serial port @ 115200 baud
+ser = io.BufferedReader(raw_Ser, buffer_size=256)
+print("Serial port: " + raw_Ser.name + "\nBaud: " + str(raw_Ser.baudrate))  # check which port and baud was really used
 
 prev_Speed_L = 0
 prev_Dir_L = 0
 prev_Speed_R = 0
 prev_Dir_R = 0
+
+motor0_RPM = 0.0
+motor1_RPM = 0.0
 
 
 while running:
@@ -60,7 +65,7 @@ while running:
         case _:
           packet = None
           
-      ser.write(packet)
+      raw_Ser.write(packet)
 
 
 	###	joysticks	###
@@ -79,7 +84,7 @@ while running:
 
     if (prev_Speed_L != target_Speed_L) or (prev_Dir_L != target_Dir_L):  # only update on change
       packet = bytes([0xFF, 0x04, target_Dir_L, target_Speed_L])  # motor0, joystick map
-      ser.write(packet)
+      raw_Ser.write(packet)
       heartbeat1 = time.perf_counter()  # reset heartbeat timer
       prev_Speed_L = target_Speed_L
       prev_Dir_L = target_Dir_L
@@ -94,7 +99,7 @@ while running:
 
     if (prev_Speed_R != target_Speed_R) or (prev_Dir_R != target_Dir_R):  # only update on change
       packet = bytes([0xFF, 0x05, target_Dir_R, target_Speed_R])  # motor1, joystick map
-      ser.write(packet)
+      raw_Ser.write(packet)
       heartbeat1 = time.perf_counter()  # reset heartbeat timer
       prev_Speed_R = target_Speed_R
       prev_Dir_R = target_Dir_R
@@ -106,76 +111,80 @@ while running:
   
   if keys[pygame.K_SPACE]:  # both motors, brake
     packet = bytes([0xFF, 0x04, 0x00, 0x00])
-    ser.write(packet)
+    raw_Ser.write(packet)
     packet = bytes([0xFF, 0x05, 0x00, 0x00])
-    ser.write(packet)
+    raw_Ser.write(packet)
     heartbeat1 = time.perf_counter()  # reset heartbeat timer
 
 
-  if keys[pygame.K_q]:  # motor0, forwards, full speed
-    packet = bytes([0xFF, 0x04, 0x01, 0xFF])
-    ser.write(packet)
-    heartbeat1 = time.perf_counter()  # reset heartbeat timer
-    
-  if keys[pygame.K_a]:  # motor0, reverse, full speed
+  if keys[pygame.K_PAGEUP]:  # motor0, forwards, full speed
     packet = bytes([0xFF, 0x04, 0x00, 0xFF])
-    ser.write(packet)
-    heartbeat1 = time.perf_counter()  # reset heartbeat timer
-
-  if keys[pygame.K_w]:  # motor0, brake
-    packet = bytes([0xFF, 0x04, 0x00, 0x00])
-    ser.write(packet)
+    raw_Ser.write(packet)
     heartbeat1 = time.perf_counter()  # reset heartbeat timer
     
-    
-  if keys[pygame.K_e]:  # motor1, forwards, full speed
-    packet = bytes([0xFF, 0x05, 0x01, 0xFF])
-    ser.write(packet)
+  if keys[pygame.K_LEFT]:  # motor0, forwards, half speed
+    packet = bytes([0xFF, 0x04, 0x00, 0x80])
+    raw_Ser.write(packet)
     heartbeat1 = time.perf_counter()  # reset heartbeat timer
-    
-  if keys[pygame.K_d]:  # motor1, reverse, full speed
-    packet = bytes([0xFF, 0x05, 0x00, 0xFF])
-    ser.write(packet)
-    heartbeat1 = time.perf_counter()  # reset heartbeat timer
- 
-  if keys[pygame.K_s]:  # motor1, brake
-    packet = bytes([0xFF, 0x05, 0x00, 0x00])
-    ser.write(packet)
+
+  if keys[pygame.K_PAGEDOWN]:  # motor0, reverse, full speed
+    packet = bytes([0xFF, 0x04, 0x01, 0xFF])
+    raw_Ser.write(packet)
     heartbeat1 = time.perf_counter()  # reset heartbeat timer
     
-
-  if keys[pygame.K_z]:  # led, on
-    packet = bytes([0xFF, 0x03, 0xFF])
-    ser.write(packet)
-    heartbeat1 = time.perf_counter()  # reset heartbeat timer
-
-  if keys[pygame.K_x]:  # led, off
-    packet = bytes([0xFF, 0x03, 0x00])
-    ser.write(packet)
+  if keys[pygame.K_RIGHT]:  # motor0, reverse, half speed
+    packet = bytes([0xFF, 0x04, 0x01, 0x80])
+    raw_Ser.write(packet)
     heartbeat1 = time.perf_counter()  # reset heartbeat timer
 
 
-	### heartbeat	###
+	### serial control	###
   
   now = time.perf_counter()  # time now in ms
   
-  if now - heartbeat1 > 0.5:  # send heartbeat after 0.5s with no command sent
+  if now - heartbeat1 > 2:  # send heartbeat after 2s with no command sent
     packet = bytes([0xFF, 0xFE])
-    ser.write(packet)
+    raw_Ser.write(packet)
     heartbeat1 = time.perf_counter()
     awaiting_ACK = True
 
+        
+  if raw_Ser.in_waiting:
+    next_Byte = ser.peek(1)[:1]
+    if((next_Byte == b'\xFF') and (header == 0)):  # check if new header is valid
+      header = 1
+      ser.read(1);  # eat header byte
+      heartbeatStart = time.perf_counter();  # reset heartbeat timer
 
-  if ser.in_waiting > 0:  # listen for ACK heartbeat message
-    ack_Msg = ser.read()
-    if ack_Msg == b'\xFF':
-      heartbeat2 = time.perf_counter()
-      awaiting_ACK = False
-    else:
-      print(f"ERR, PARSE")
+  if header == 1 and raw_Ser.in_waiting:  # check for valid header and waiting data
+    next_Byte = ser.peek(1)[:1];  # check incoming packet id
+    heartbeatStart = time.perf_counter();  # reset heartbeat timer if receiving packet, including invalid data
+  
+    match next_Byte:  # compare incoming packet id to commands
+        
+      case b'\x00':  # ACK kill motors
+        ser.read(1)
+        print("Motors killed!")
 
-  if awaiting_ACK == True and now - heartbeat2 > 0.5:
-    # action to take when no ACK message recieved
+      case b'\x06':  # motor0 RPM value
+        ser.read(1)
+        motor0_RPM = ser.read(4)
+        
+      case b'\x07':  # motor1 RPM value
+        ser.read(1)
+        motor1_RPM = ser.read(4)
+        
+      case b'\xFE':  # ACK heartbeat
+        ser.read(1)
+        awaiting_ACK = False
+
+      case _:
+        ser.read(1)
+        print(f"ERR, PARSE")
+    
+  if not header and raw_Ser.in_waiting: ser.read(1)
+
+  if awaiting_ACK == True and now - heartbeat2 > 0.5:  # action to take when no ACK message recieved
     awaiting_ACK = True	 # placeholder
     
 

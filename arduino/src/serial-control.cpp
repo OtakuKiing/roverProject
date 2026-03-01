@@ -2,15 +2,23 @@
 - add specific error codes
 */
 
-#include "serial-control.h"
+/*
+0x00 = kill motors i/o
+0x01 = 
+0x02
+0x03 = 
+0x04 = motor0 i
+0x05 = motor1 i
+0x06 = motor0 o
+0x07 = motor1 o
+0x08
+0x09
+0x0A
+0xFE = heartbeat i/0
+0xFF = header i/o
+*/
 
-struct __attribute__((packed)) PacketIn{  // message id, then data. packed means no extra bytes added for padding
-  uint8_t id;
-  uint8_t byte1;
-  uint8_t byte2;
-  uint8_t byte3;
-  uint8_t byte4;
-};
+#include "serial-control.h"
 
 const int LED_PIN = 13;
 
@@ -19,6 +27,7 @@ uint8_t target_Id;
 uint8_t target_Led_Pwm;
 uint8_t target_Dir; 
 uint8_t target_Speed;
+uint8_t prev_Target_Speed;
 
 bool header = 0;	// 
 int heartbeatStart;  // timer since last valid command
@@ -29,7 +38,6 @@ void serialInit() {
 }
 
 void serialRead() {
-  target_Id = 0;
   if(Serial.available() > 0) {
     uint8_t next_Byte = Serial.peek();
     if((next_Byte == 0xFF) && (header == 0)) {  // check if header is valid
@@ -42,7 +50,7 @@ void serialRead() {
       next_Byte = Serial.peek();  // store packet id
       switch (next_Byte) {  // check id
 				case 0x00:  // emergency motor kill
-					PacketIn cmd;
+					Packet cmd;
 					Serial.read();
 					header = 0;
 					
@@ -51,7 +59,7 @@ void serialRead() {
 					
 				case 0x03:
 					if(Serial.available() >= 2) {  // wait for full packet
-					PacketIn cmd;
+					Packet cmd;
 					Serial.readBytes((uint8_t*)&cmd, 2);
 					header = 0;
 
@@ -63,7 +71,7 @@ void serialRead() {
 				case 0x04:
 				case 0x05:
 					if(Serial.available() >= 3) {  // wait for full packet
-					PacketIn cmd;
+					Packet cmd;
 					Serial.readBytes((uint8_t*)&cmd, 3);
 					header = 0;
 
@@ -76,7 +84,7 @@ void serialRead() {
 				case 0xFE:  // serial heartbeat, only received when silent for 500ms
 					Serial.read();
 					if(Serial.availableForWrite()) {  // respond with ACK message
-						Serial.write(0xFF);
+						Serial.write(0xFE);
 					}
 					header = 0;
 					break;
@@ -94,7 +102,22 @@ void serialRead() {
     int now = millis();
     if(now - heartbeatStart > heartbeatInterval) {
       // action to take if heartbeat stops
+			motorsKill();
 			digitalWrite(13, HIGH);
     }
   }
+}
+
+void serialWrite(Packet cmd_Reply) {
+	switch (cmd_Reply.id) {
+		case 0x00:  // ACK motor kill
+			if (Serial.availableForWrite()) {
+				Serial.write(0xFF); Serial.write(cmd_Reply.id);}
+			break;
+		case 0x06:  // return encoder values
+		case 0x07:
+			if(Serial.availableForWrite() > 6) {
+				Serial.write(0xFF); Serial.write((uint8_t*)&cmd_Reply, sizeof(cmd_Reply));}  // convert reply packet to raw bytes
+			break;
+	}
 }
