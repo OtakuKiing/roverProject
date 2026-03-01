@@ -26,6 +26,22 @@
 | Bidirectional | Admin     | 0xFE       | Heartbeat                                         |
 */
 
+/*
+0x00 = kill motors i/o
+0x01 = 
+0x02
+0x03 = 
+0x04 = motor0 i
+0x05 = motor1 i
+0x06 = motor0 o
+0x07 = motor1 o
+0x08
+0x09
+0x0A
+0xFE = heartbeat i/0
+0xFF = header i/o
+*/
+
 #include "serial-control.h"
 
 const int LED_PIN = 13;

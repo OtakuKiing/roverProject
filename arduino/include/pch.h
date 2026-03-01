@@ -4,5 +4,6 @@
 #include "Arduino.h"
 #include "motor-control.h"
 #include "serial-control.h"
+#include "pid-controller.h"
 
 #endif
