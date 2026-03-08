@@ -10,4 +10,7 @@ void motor0Move(bool direction, int speed);
 void motor1Move(bool direction, int speed);
 bool motorsKill();
 
+extern float motor0_RPM;
+extern float motor1_RPM;
+
 #endif
