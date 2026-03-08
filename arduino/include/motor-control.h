@@ -12,6 +12,5 @@ bool motorsKill();
 
 extern float motor0_RPM;
 extern float motor1_RPM;
-extern float motor0_Distance;
 
 #endif

@@ -1,8 +1,8 @@
 #ifndef SERIAL_CTRL
 #define SERIAL_CTRL
 
-#include "Arduino.h"  // doesn't need pch.h as no external vars/functions
-#include "motor-control.h"
+#include "Arduino.h"
+#include "motor-control.h"  // for motorsKill() function
 
 struct __attribute__((packed)) Packet{  // message id, then data. packed means no extra bytes added for padding
   uint8_t id;
@@ -12,9 +12,10 @@ struct __attribute__((packed)) Packet{  // message id, then data. packed means n
   uint8_t byte4;
 };
 
-void serialInit();  // initialise serial port
-void serialRead();  // read serial
-void serialWrite(Packet packet_Out);  // write feedback to serial
+void serialInit();
+void serialRead();
+void serialWrite(Packet cmd_Out);
+
 extern uint8_t target_Id; 
 extern uint8_t target_Led_Pwm; 
 extern uint8_t target_Dir;
