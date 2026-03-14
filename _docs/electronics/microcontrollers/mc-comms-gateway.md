@@ -21,7 +21,7 @@ Describe how specs are laid out + other info that may help understand the page
  - Wireless transfer rate:  
  - Max range:  
  - Frequency:  
- - GPIO: 13
+ - GPIO:
  - Cost:
 
 ### Key Notes & Comparisons

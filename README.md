@@ -1,31 +1,58 @@
-# Rover Plan
+[//]: # (This is a comment format of Markdown files!)
 
-Plan for large, ~20-30kg payload autonomous rover vehicle.  
+![ROS2](https://img.shields.io/badge/ROS2-Humble-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Platform](https://img.shields.io/badge/Platform-Linux-orange)
 
-Roadmap on progress can be found [here](/roadmap.md).
+# Project Overview
 
-## Current Status: V0, Month 1
-**Timeline**: February 2026 - March 2026
-**Focus**: Arduino + ROS2 fundamentals, test rig development
+## What it is
+Project Wayfinder is planned to be a relatively large (exact size TBD) autonomous rover vehicle, designed for 3D mapping and autonomous navigation via SLAM and computer vision algorithms. Designed from the ground up, the aim is to do much as possible via ground up implementation from first principles (e.g. self-written PID and EKF), while learning essential frameworks such as ROS2. 
 
-### Tasks
-- [X] Set up dev environment (ROS2 Humble, Arduino IDE, GitHub)
-- [ ] Arduino: Serial communication, PWM motor control, encoder reading
-- [ ] ROS2 practice: Publisher/subscriber nodes, Plotjuggler visualization
-- [ ] Design test rig (literally just flat plate w/ mounting holes) in OnShape (2-motor platform)
-- [ ] Finalize parts list for first purchase
+The target design architecture: RasPi 4 (ROS2, autonomous nav and mapping), ESP32 (web interface and comms relay), Teensy 4.1 (microROS, real-time control)
 
-### Month 1 Milestones
-- [ ] Basic velocity control loop implemented
-- [ ] Arduino <-> ROS2 serial bridge functional
-- [ ] Encoder data publishing to ROS2 topics
-- [ ] Clean documentation in GitHub
+## File Index
 
-## Inspo board
-- Rheinmetall UGV family
-- BAE Atlas CCV
-- Hanwha Arion-SMET
-- ARGO J5
-- [Independent suspension](https://qph.cf2.quoracdn.net/main-qimg-37f520c2fc0b2e7ac952b6dfdf074317-pjlq)
-- [Tracked All-Terrain Vehicle](https://youtu.be/R1GxJtMCTXE)
-- [Wheeled Auto ATV](https://youtu.be/3yRSTr__d6Q)
+**[Arduino](/arduino)**  
+    ├> [Local libraries](/arduino/lib)  
+    ├> [Source Code](/arduino/src)  
+    └> [Header files](/arduino/include)  
+
+**[Ground Controller](/ground-controller)**  
+    └> [Python](/ground-controller/python) (via PyGame & PySerial)
+
+**[Docs](/_docs)**  
+    ├> [Assets](/_docs/assets)  
+    ├> [Subversion Info](/_docs/versioning) (complete breakdowns of each subversion)  
+    ├> [Electronics](/_docs/electronics)  
+    └> [Hardware](/_docs/hardware)  
+
+
+## Getting Started  
+Check out [contributions](/CONTRIBUTING.md) before editing anything!
+
+Wayfinder is built mainly on *Linux* infrastructure (specifically Ubuntu 22.04); alternatives will be mentioned where possible, but will not be prioritised.  
+
+- Clone this repo and install the PlatformIO extension in your IDE
+- Follow the [ROS2 "Humble" install guide](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html)
+
+
+## Status
+**Focus**: Arduino + ROS2 fundamentals, test rig development  
+
+ - [X] Set up dev environment (ROS2 Humble, PlatformIO, Git)
+ - [X] Finalize parts list for first purchase
+ - [X] Serial communication w/ ROS2, PWM motor control, encoder reading
+ - [ ] ROS2 practice: Publisher/subscriber nodes, Plotjuggler visualization
+ - [ ] Design V0 test rig in Onshape
+
+
+## Team & Credits
+Project Lead - Michael Yakubu  
+
+Hardware Design - TBD  
+Software Engineering - TBD  
+Electronics Design - TBD  
+
+### License
+See [LICENSE](/LICENSE) for more details. 
