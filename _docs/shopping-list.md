@@ -6,16 +6,17 @@ Most parts come from the Pi Hut, but some may be sourced from sites such as Pimo
 | Component                                                                                                    | Quantity | Cost £ |
 | ------------------------------------------------------------------------------------------------------------ | -------- | ------ |
 | **V0**                                                                                                       |          |        |
-| [Arduino UNO R3](https://thepihut.com/products/arduino-uno-rev-3)																						 | 1        | 24.50  |
-| [12V motor w/ encoder](https://thepihut.com/products/metal-dc-geared-motor-w-encoder-12v-251rpm-18kg-cm)     | 2        | 31.80  |
-| [Half-size breadboard](https://thepihut.com/products/raspberry-pi-breadboard-half-size)											 | 1        | 3.00   |
-| [DuPont Wires](https://thepihut.com/products/thepihuts-jumper-bumper-pack-120pcs-dupont-wire)        		     | 1        | 6.00   |
-| [Piezo Buzzer](https://thepihut.com/products/piezo-buzzer)                                                   | 1        | 1.30   |
-| [Electrolytic Capacitors](https://thepihut.com/products/200-piece-ultimate-capacitor-kit)                    | 1        | 6.00   |
-| [Motor driver board](https://thepihut.com/products/10a-5v-30v-2-channel-dc-motor-driver)                     | 1        | 22.20  |
-| [DuPont Wires](https://thepihut.com/products/thepihuts-jumper-bumper-pack-120pcs-dupont-wire)                | 1        | 6.00   |
-| [IMU](https://thepihut.com/products/adafruit-mpu-6050-6-dof-accel-and-gyro-sensor-stemma-qt-qwiic)           | 1        | 8.00   |
+| ~~[Arduino UNO R3](https://thepihut.com/products/arduino-uno-rev-3)~~																				 | 1        | 24.50  |
+| ~~[12V motor w/ encoder](https://thepihut.com/products/metal-dc-geared-motor-w-encoder-12v-251rpm-18kg-cm)~~ | 2        | 31.80  |
+| ~~[Half-size breadboard](https://thepihut.com/products/raspberry-pi-breadboard-half-size)~~									 | 1        | 3.00   |
+| ~~[DuPont Wires](https://thepihut.com/products/thepihuts-jumper-bumper-pack-120pcs-dupont-wire)~~            | 1        | 6.00   |
+| ~~[Piezo Buzzer](https://thepihut.com/products/piezo-buzzer)~~                                               | 1        | 1.30   |
+| ~~[Electrolytic Capacitors](https://thepihut.com/products/200-piece-ultimate-capacitor-kit)~~                | 1        | 6.00   |
+| ~~[Motor driver board](https://thepihut.com/products/10a-5v-30v-2-channel-dc-motor-driver)~~                 | 1        | 22.20  |
+| ~~[DC Jack to Screw Terminal]()~~                                                                            | 1        | 5.99   |
+| -------------------------------------------                                                                  | -------- | 100.70 |
 | -------------------------------------------                                                                  | -------- | ------ |
+| [IMU](https://thepihut.com/products/adafruit-mpu-6050-6-dof-accel-and-gyro-sensor-stemma-qt-qwiic)           | 1        | 8.00   |
 | Assembly hardware                                                                                            | 1        | 30.00  |
 | 6mm Birch Plywood                                                                                            | 1        | 20.00  |
 | [Hubs](https://thepihut.com/products/pololu-universal-aluminium-mounting-hub-for-6mm-shafts-m3-holes-2-pack) | 1        | 12.50  |
@@ -27,7 +28,7 @@ Most parts come from the Pi Hut, but some may be sourced from sites such as Pimo
 | [LiPo safety charge sack](https://overlander.co.uk/product/lipo-safety-charge-sack)                          | 1        | 7.99   |
 | [LiPo Voltage Alarm](https://www.hobbyrc.co.uk/1-8s-cell-checker-with-low-voltage-alarm)                     | 1        | 2.60   |
 | [Buck converter](ttps://thepihut.com/products/20w-adjustable-dc-dc-buck-converter-with-digital-display)      | 2        | 4.70   |
-| **Subtotal**                                                                                                 | -------- | 191.07 |
+| **Subtotal**                                                                                                 | -------- | XXX.XX |
 |                                                                                                              |          |        |
 | **V1**                                                                                                       |          |        |
 | [ESP32-S3](https://thepihut.com/products/adafruit-esp32-s3-feather-with-4mb-flash-2mb-psram-stemma-qt-qwiic) | 1        | 16.80  |

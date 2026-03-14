@@ -1,8 +1,8 @@
 # TODO: split into functions - better grouping!
 
-
 # Example file
 import pygame, serial, time, queue, struct, threading
+import serial.tools.list_ports
 
 # pygame setup
 pygame.init()
@@ -17,13 +17,24 @@ pygame.display.flip()  # update screen
 pygame.display.set_caption("Input Window")
 
 ### serial setup ###
+serial_thread = None
 serial_Queue = queue.Queue()
 prev_Packet_Out = None
 header = 0
 heartbeat1 = 0
 awaiting_ACK = False
-raw_Ser = serial.Serial(port='COM4', baudrate=115200, timeout=1)  # open serial port @ 115200 baud
-print("Serial port: " + raw_Ser.name + "\nBaud: " + str(raw_Ser.baudrate))  # check which port and baud was really used
+
+raw_Ser: serial.Serial | None = None
+
+while raw_Ser == None:  # search for arduino
+  all_Ports = serial.tools.list_ports.comports()	# get all open serial ports
+  for comport in all_Ports:
+    if "arduino" in comport.description.lower():
+      raw_Ser = serial.Serial(port=comport.device, baudrate=115200, timeout=1)  # open serial port @ 115200 baud
+      print(f"Serial port: {raw_Ser.name or "unknown"}\nBaud: {raw_Ser.baudrate}")  # print which port and baud was really used
+      break
+
+  if raw_Ser == None: print("No port available")
 
 ## motor data input ##
 prev_Speed_L = 0
@@ -46,6 +57,7 @@ def serialIO():
   packet_Out = b''
   while running:
     ### serial control	###
+    assert raw_Ser is not None
 
     ## heartbeat ##
     now = time.perf_counter()  # time now in ms
@@ -70,10 +82,11 @@ def serialIO():
       byte = raw_Ser.read(1)
     else: byte = b''
       
-    if byte == b'\xFF' and header == 0: 
+    if byte == b'\xFF' and header == 0:  # resets loop, don't send header to match-case
       header = 1  
-      continue  # resets loop, don't send header to match-case
-    if header == 1:
+      continue
+
+    if header == 1:  # match packet structure to command database
       match byte:
         case b'\x04':  # motor0 data
           header = 0
@@ -145,7 +158,7 @@ try:
           case pygame.K_RIGHT:  # motor1 rev half
             serial_Queue.put_nowait(b'\xFF\x05\x01\x80')
 
-      elif event.type == pygame.KEYUP:
+      elif event.type == pygame.KEYUP:  # send stop command on key up
         if event.key in (pygame.K_PAGEUP, pygame.K_LEFT):  # motor0, brk
             serial_Queue.put_nowait(b'\xFF\x04\x00\x00')
         elif event.key in (pygame.K_PAGEDOWN, pygame.K_RIGHT):  # motor1, brk
@@ -185,10 +198,16 @@ try:
         prev_Speed_R = target_Speed_R
         prev_Dir_R = target_Dir_R
     
-
 finally:
+
   serial_Queue.put(None)
-  serial_thread.join()
   raw_Ser.close()
+
+  try:  # make sure thread is running before terminating
+    assert serial_thread is not None
+    serial_thread.join()
+  except AssertionError:
+    print("Serial thread is not running!")
+
   print("Closing safely...")
   pygame.quit()
