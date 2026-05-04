@@ -26,22 +26,6 @@
 | Bidirectional | Admin     | 0xFE       | Heartbeat                                         |
 */
 
-/*
-0x00 = kill motors i/o
-0x01 = 
-0x02
-0x03 = 
-0x04 = motor0 i
-0x05 = motor1 i
-0x06 = motor0 o
-0x07 = motor1 o
-0x08
-0x09
-0x0A
-0xFE = heartbeat i/0
-0xFF = header i/o
-*/
-
 #include "serial-control.h"
 
 const int LED_PIN = 13;
@@ -51,12 +35,11 @@ uint8_t next_Byte;
 uint8_t target_Id;
 uint8_t target_Dir; 
 uint8_t target_Speed;
-uint8_t prev_Target_Speed;
 Packet prev_Cmd_Out;
 
 bool header = 0;	// 
-int heartbeatIn;  // timer since last valid command
-int heartbeatInterval = 1000;  //how long to wait before executing 'no comms' procedure
+unsigned long heartbeatIn;  // timer since last valid command
+int heartbeatInterval = 1000;  // how long to wait before executing 'no comms' procedure
 
 void serialInit() {
   Serial.begin(115200);
@@ -112,10 +95,10 @@ void serialRead() {
 		}
 	}
 
-	int now = millis();
+	unsigned long now = millis();
 	if(now - heartbeatIn > heartbeatInterval) {  // action to take if heartbeat stops
 		motorsKill();
-		digitalWrite(13, HIGH);
+		digitalWrite(LED_PIN, HIGH);
 	}
 }
 
@@ -123,7 +106,7 @@ void serialWrite(Packet cmd_Out) {  // write data to the serial bus
 	if ((prev_Cmd_Out.id != cmd_Out.id) || (prev_Cmd_Out.byte1 != cmd_Out.byte1) || (prev_Cmd_Out.byte2 != cmd_Out.byte2) || (prev_Cmd_Out.byte3 != cmd_Out.byte3) || (prev_Cmd_Out.byte4 != cmd_Out.byte4)) {  // only update on change
 		switch (cmd_Out.id) {
 			case 0x00:  // ACK motor kill
-				if (Serial.availableForWrite()) {
+				if (Serial.availableForWrite() > 1) {
 					Serial.write(0xFF); Serial.write(cmd_Out.id);}
 				break;
 

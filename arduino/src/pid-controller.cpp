@@ -1,25 +1,32 @@
 #include "pid-controller.h"
 
-int pidController(float input, float target) {
-    static float integral = 0;
-    static float previous_error = 0;
+const float Kp = 2.0f, Ki = 0.5f, Kd = 1.0f; // proportional, integral, derivative gains
+const float out_max = 251.0f; const int MIN_PWM = 10; // output limits
+int pidController(float setpoint, float measured) {
+	// static means variable persists only within this function
+	static unsigned long previous_time = 0;
+	static float previous_error = 0.0f;
+	static float integral = 0;
+  
+	unsigned long time = micros(); // time now in usec
+	float dt = (time - previous_time) / 1e6f; // change in time in sec
+	if (dt <= 0.0f) return (int)0; // if no time has passed, no output
 
-    const float Kp = 0.5f, Ki = 0.1f, Kd = 0.1f;
-    const float out_min = 0.0f, out_max = 255.0f;
+	float error = setpoint - measured; // how far it is from the target RPM
 
-    float error = target - input;
+	integral += error * dt; // scale error to time
+	if (Ki != 0.0f) integral = constrain(integral, -out_max / Ki, out_max / Ki); // clamp integral to prevent windup if Ki is valid
 
-    integral += error;
-    // Clamp integral to prevent windup
-    if (integral > out_max / Ki) integral = out_max / Ki;
-    if (integral < out_min / Ki) integral = out_min / Ki;
+	float derivative = (error - previous_error) / dt; // TODO: should this be derivative of error or measurements?
 
-    float derivative = error - previous_error;
-    previous_error = error;
+	float output = (Kp * error) + (Ki * integral) + (Kd * derivative);
+	output = constrain(output, -out_max, out_max); // clamp signed output
 
-    int output = Kp * error + Ki * integral + Kd * derivative;
-    if (output > out_max) output = out_max;
-    if (output < out_min) output = out_min;
+	int pwm_out = (int)((output / out_max) * 255); // convert RPM to PWM
+	if (abs(pwm_out) < MIN_PWM) pwm_out = 0; // PWM deadzone from -10 to 10
 
-    return output;
+	previous_error = error;
+	previous_time = time;
+
+	return abs(pwm_out); // return unsigned PWM
 }
