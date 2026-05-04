@@ -1,4 +1,6 @@
 # TODO: split into functions - better grouping!
+# add COBS encoding using /x00 as terminator
+# add CRC
 
 
 # Example file
@@ -23,7 +25,7 @@ header = 0
 heartbeat1 = 0
 awaiting_ACK = False
 raw_Ser = serial.Serial(port='COM4', baudrate=115200, timeout=1)  # open serial port @ 115200 baud
-print("Serial port: " + raw_Ser.name + "\nBaud: " + str(raw_Ser.baudrate))  # check which port and baud was really used
+print("Serial port: ", raw_Ser.name, "\nBaud: " + str(raw_Ser.baudrate))  # check which port and baud was really used
 
 ## motor data input ##
 prev_Speed_L = 0
@@ -59,7 +61,7 @@ def serialIO():
       packet_Out = serial_Queue.get_nowait()
       if packet_Out is not None:
         raw_Ser.write(packet_Out)
-        print("Sent this:", packet_Out)
+        print("Sent this:", packet_Out)  # debug serial output
         heartbeat1 = time.perf_counter()
       else: break   # sentinel command, exit
     except queue.Empty:
@@ -103,6 +105,7 @@ def serialIO():
         case _:  # ignore bad data
           header = 0
 
+serial_thread = None  # if thread fails to start, finally block still works
 try:
   serial_thread = threading.Thread(target=serialIO, daemon=True)
   serial_thread.start()  # start threaded serial 
@@ -145,11 +148,10 @@ try:
           case pygame.K_RIGHT:  # motor1 rev half
             serial_Queue.put_nowait(b'\xFF\x05\x01\x80')
 
-      elif event.type == pygame.KEYUP:
+      elif event.type == pygame.KEYUP:  # auto brake after movement
         if event.key in (pygame.K_PAGEUP, pygame.K_LEFT):  # motor0, brk
             serial_Queue.put_nowait(b'\xFF\x04\x00\x00')
         elif event.key in (pygame.K_PAGEDOWN, pygame.K_RIGHT):  # motor1, brk
-            serial_Queue.put_nowait(b'\xFF\x05\x00\x00')
             serial_Queue.put_nowait(b'\xFF\x05\x00\x00')
 
 
@@ -188,7 +190,8 @@ try:
 
 finally:
   serial_Queue.put(None)
-  serial_thread.join()
+  if serial_thread is not None:
+    serial_thread.join()
   raw_Ser.close()
   print("Closing safely...")
   pygame.quit()

@@ -108,14 +108,14 @@ void motorsSpeedDistance() {  // get raw motor values and convert to rpm/mps
 	unsigned long motors_Elapsed_Time = motors_Current_Time - motors_Last_Time;
 	
 	if(motors_Elapsed_Time >= CALC_RATE_MS) {  // Calculate every >100ms
-		noInterrupts();  // stop duration from being changed during calculations
+		noInterrupts();  // stop duration from being changed during calculations by assigning a temporary variable
 		int dur0 = motor0_Duration;
 		int dur1 = motor1_Duration;
 		motor0_Duration = 0;
 		motor1_Duration = 0;
 		interrupts();
 
-		motor0_RPM = (float(dur0) / MOTOR_CPR) / (motors_Elapsed_Time / 60000.0f);
+		motor0_RPM = (float(dur0) / MOTOR_CPR) / (motors_Elapsed_Time / 60000.0f); // RPM = (counts/CPR) / (time in min)
 		motor1_RPM = (float(dur1) / MOTOR_CPR) / (motors_Elapsed_Time / 60000.0f);
 		
 		motor0_MPS = motor0_RPM * WHEEL_CIRC / 60.0f;

@@ -3,6 +3,6 @@
 
 #include "Arduino.h"
 
-int pidController(float input, float target);
+int pidController(float setpoint, float measured);
 
 #endif
