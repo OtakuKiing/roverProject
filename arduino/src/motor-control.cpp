@@ -46,7 +46,7 @@ volatile int motor1_Duration;
 volatile bool motor0_Direction;  // the rotation direction
 volatile bool motor1_Direction;  
 
-unsigned long motors_Last_Time;  // last time motor rpm was checked
+unsigned long motors_Before;  // last time motor rpm was checked
 
 // --- Functions --- //
 
@@ -87,7 +87,7 @@ void motorsInit() {  // initialize motor pins
 	pinMode(MOTOR_0_PWM, OUTPUT);
 	pinMode(MOTOR_1_DIR, OUTPUT);
 	pinMode(MOTOR_1_PWM, OUTPUT);
-	motors_Last_Time = millis();
+	motors_Before = millis();
 }
 
 void encodersInit() {  // initialize encoder pins
@@ -104,27 +104,28 @@ void encodersInit() {  // initialize encoder pins
 
 void motorsSpeedDistance() {  // get raw motor values and convert to rpm/mps
 
-	unsigned long motors_Current_Time = millis();
-	unsigned long motors_Elapsed_Time = motors_Current_Time - motors_Last_Time;
+	unsigned long motors_Now = millis();
+	unsigned long motors_dt = motors_Now - motors_Before;
 	
-	if(motors_Elapsed_Time >= CALC_RATE_MS) {  // Calculate every >100ms
+	if(motors_dt >= CALC_RATE_MS) {  // Calculate every >100ms
 		noInterrupts();  // stop duration from being changed during calculations
-		int dur0 = motor0_Duration;
-		int dur1 = motor1_Duration;
+		long dur0 = motor0_Duration;
+		long dur1 = motor1_Duration;
 		motor0_Duration = 0;
 		motor1_Duration = 0;
 		interrupts();
 
-		motor0_RPM = (float(dur0) / MOTOR_CPR) / (motors_Elapsed_Time / 60000.0f);
-		motor1_RPM = (float(dur1) / MOTOR_CPR) / (motors_Elapsed_Time / 60000.0f);
+		// rpm = (counts / (counts per revolution)) / (time in minutes)
+		motor0_RPM = (float(dur0) / MOTOR_CPR) / (motors_dt / 60000.0f);
+		motor1_RPM = (float(dur1) / MOTOR_CPR) / (motors_dt / 60000.0f);
 		
 		motor0_MPS = motor0_RPM * WHEEL_CIRC / 60.0f;
 		motor1_MPS = motor1_RPM * WHEEL_CIRC / 60.0f;
 
-		motor0_Distance += motor0_MPS * (motors_Elapsed_Time / 1000.0f);
-		motor1_Distance += motor1_MPS * (motors_Elapsed_Time / 1000.0f);
+		motor0_Distance += motor0_MPS * (motors_dt / 1000.0f);
+		motor1_Distance += motor1_MPS * (motors_dt / 1000.0f);
 
-		motors_Last_Time = motors_Current_Time;
+		motors_Before = motors_Now;
 	}
 }
 

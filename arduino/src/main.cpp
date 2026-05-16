@@ -13,12 +13,12 @@ void serialControlInput() {
 			motorsKill();
 			break;
 
-		case 0x04:
+		case 0x01:
 			motor0_Target_RPM = target_Speed * 251 / 255;
 			motor0Move(target_Dir, target_Speed);
 			break;
 
-		case 0x05:
+		case 0x02:
 			motor1_Target_RPM = target_Speed * 251 / 255;
 			motor1Move(target_Dir, target_Speed);
 			break;
@@ -26,8 +26,9 @@ void serialControlInput() {
 }
 
 void serialControlOutput() {
-	Packet packet_Out = {0x06};  // test, motor0 control only
-	memcpy(&packet_Out.byte1, &motor0_RPM, sizeof(float));
+	Packet packet_Out = {0x01};  // test, LED control only
+	float target_Speed_f = (float)target_Speed;  // convert to float, which takes up byte1-4 in the packet
+	memcpy(&packet_Out.byte1, &target_Speed_f, sizeof(float));
 	serialWrite(packet_Out);
 }
 
@@ -39,7 +40,6 @@ void setup() {
 }
 
 void loop() {
-
 	motorsSpeedDistance();	// update all motor values
 
 	serialControlInput();  // read serial

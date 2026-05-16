@@ -45,21 +45,22 @@ void serialRead() {
 		heartbeatIn = millis();  // reset heartbeat timer if receiving packet, including invalid data
 		next_Byte = Serial.peek();  // store packet id
 		switch (next_Byte) {  // check id
-			case 0x00:  // emergency motor kill
+			case 0x00:  // insert emergency action here
 				target_Id = Serial.read();
 				header = 0;
 				break;
 
-			case 0x04:
-			case 0x05:
-				if(Serial.available() >= 3) {  // wait for full packet
-				Packet cmd;
-				Serial.readBytes((uint8_t*)&cmd, 3);
-				header = 0;
+			case 0x01:  // motor0 command
+			case 0x02:  // motor1 command
+				if(Serial.available() >= 5) {  // wait for full packet
+					Packet cmd;
+					Serial.readBytes((uint8_t*)&cmd, sizeof(cmd));  // read packet and assign to the variable cmd 
+					header = 0;  // reset header
 
-				target_Id = cmd.id;
-				target_Dir = cmd.byte1;
-				target_Speed = cmd.byte2;
+					// globalise serial data
+					target_Id = cmd.id;
+					target_Dir = cmd.byte1;
+					target_Speed = cmd.byte2;
 				}
 				break;
 
@@ -86,17 +87,17 @@ void serialRead() {
 	}
 }
 
-void serialWrite(Packet cmd_Out) {
-	if ((prev_Cmd_Out.id != cmd_Out.id) || (prev_Cmd_Out.byte1 != cmd_Out.byte1)) {  // only update on change
+void serialWrite(Packet cmd_Out) {  // write data to the serial bus
+	if ((prev_Cmd_Out.id != cmd_Out.id) || (prev_Cmd_Out.byte1 != cmd_Out.byte1) || (prev_Cmd_Out.byte2 != cmd_Out.byte2) || (prev_Cmd_Out.byte3 != cmd_Out.byte3) || (prev_Cmd_Out.byte4 != cmd_Out.byte4)) {  // only update on change
 		switch (cmd_Out.id) {
 			case 0x00:  // ACK motor kill
 				if (Serial.availableForWrite()) {
 					Serial.write(0xFF); Serial.write(cmd_Out.id);}
 				break;
 
-			case 0x01:  // return encoder values
-			case 0x02:
-				if(Serial.availableForWrite() > 6) {
+			case 0x01:  // motor0 encoder values
+			case 0x02:  // motor1 encoder values
+				if(Serial.availableForWrite() >= 6) {
 					Serial.write(0xFF); Serial.write((uint8_t*)&cmd_Out, sizeof(cmd_Out));}  // convert Out packet to raw bytes
 				break; 
 			}

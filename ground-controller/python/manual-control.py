@@ -1,4 +1,6 @@
-# TODO: split into functions - better grouping!
+# TODO: 
+# split into nicer functions - better grouping!
+# test controller inputs
 
 # Example file
 import pygame, serial, time, queue, struct, threading
@@ -88,16 +90,16 @@ def serialIO():
 
     if header == 1:  # match packet structure to command database
       match byte:
-        case b'\x04':  # motor0 data
+        case b'\x01':  # motor0 data
           header = 0
           packet_In = raw_Ser.read(4)
           if len(packet_In) == 4:  # check if packet is valid
             motor0_RPM = struct.unpack('<f', packet_In)[0]  # convert bytes from array to little-endian float
-            print(motor0_RPM)
+            print("Recieved this:", motor0_RPM)
           else:
             print("Bad packet! motor0")
 
-        case b'\x05':  # motor1 data
+        case b'\x02':  # motor1 data
           header = 0
           packet_In = raw_Ser.read(4)
           if len(packet_In) == 4:  # check if packet is valid
@@ -135,35 +137,34 @@ try:
       elif event.type == pygame.JOYBUTTONDOWN:
         match event.button:
           case 5:  # PS, kill motors
-            serialSendUrgent(b'\xFF\x00')
+            serialSendUrgent(b'\xFF\x00\x00\x00\x00\x00')
             
           case 11:  # D-pad up
-            serial_Queue.put_nowait(b'\xFF\x03\xFF')
+            serial_Queue.put_nowait(b'\xFF\x03\xFF\x00\x00\x00')
 
           case 12:  # D-pad down
-            serial_Queue.put_nowait(b'\xFF\x03\x00')
+            serial_Queue.put_nowait(b'\xFF\x03\x00\x00\x00\x00')
 
       ### keyboard controls ###
       elif event.type == pygame.KEYDOWN:  # send command once on key down
         match event.key:
           case pygame.K_PAGEUP:  # motor0 fwd full
-            serial_Queue.put_nowait(b'\xFF\x04\x00\xFF')
+            serial_Queue.put_nowait(b'\xFF\x01\x00\xFF\x00\x00')
 
           case pygame.K_LEFT:  # motor0 fwd half
-            serial_Queue.put_nowait(b'\xFF\x04\x00\x80')
+            serial_Queue.put_nowait(b'\xFF\x01\x00\x80\x00\x00')
 
           case pygame.K_PAGEDOWN:  # motor1 rev full
-            serial_Queue.put_nowait(b'\xFF\x05\x01\xFF')
+            serial_Queue.put_nowait(b'\xFF\x02\x01\xFF\x00\x00')
 
           case pygame.K_RIGHT:  # motor1 rev half
-            serial_Queue.put_nowait(b'\xFF\x05\x01\x80')
+            serial_Queue.put_nowait(b'\xFF\x02\x01\x80\x00\x00')
 
       elif event.type == pygame.KEYUP:  # send stop command on key up
         if event.key in (pygame.K_PAGEUP, pygame.K_LEFT):  # motor0, brk
-            serial_Queue.put_nowait(b'\xFF\x04\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x01\x00\x00\x00\x00')
         elif event.key in (pygame.K_PAGEDOWN, pygame.K_RIGHT):  # motor1, brk
-            serial_Queue.put_nowait(b'\xFF\x05\x00\x00')
-            serial_Queue.put_nowait(b'\xFF\x05\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x00\x00\x00\x00')
 
 
     ###	joysticks	###
@@ -181,7 +182,7 @@ try:
         target_Dir_L = 0
 
       if (prev_Speed_L != target_Speed_L) or (prev_Dir_L != target_Dir_L):  # only update on change
-        serial_Queue.put_nowait(bytes([0xFF, 0x04, target_Dir_L, target_Speed_L]))  # motor1, joystick map
+        serial_Queue.put_nowait(bytes([0xFF, 0x01, target_Dir_L, target_Speed_L]))  # motor0, joystick map
         prev_Speed_L = target_Speed_L
         prev_Dir_L = target_Dir_L
       
@@ -194,7 +195,7 @@ try:
         target_Dir_R = 0
 
       if (prev_Speed_R != target_Speed_R) or (prev_Dir_R != target_Dir_R):  # only update on change
-        serial_Queue.put_nowait(bytes([0xFF, 0x05, target_Dir_R, target_Speed_R]))  # motor1, joystick map
+        serial_Queue.put_nowait(bytes([0xFF, 0x02, target_Dir_R, target_Speed_R]))  # motor1, joystick map
         prev_Speed_R = target_Speed_R
         prev_Dir_R = target_Dir_R
     
