@@ -1,13 +1,29 @@
 /* TODO:
-- add specific error codes
+- add crc8 and COBS
 */
 
-/* ID codes
-0x00 = e-stop i/o
-0x01 = motor0 i/o
-0x02 = motor1 i/o
-0xFE = heartbeat i/o
-0xFF = header i/o
+/* ID code table
+| Direction     | Category  | Message ID | Content                                           |
+| ------------- | --------- | ---------- | ------------------------------------------------- |
+| Pi –> Arduino | Admin     | 0x00       | Emergency state X - run routine and await command |
+|               |           | 0x01       | Exit emergency state                              |
+|               |           | 0x02       | Toggle verbose telemetry                          |
+|               |           | 0x03       | Toggle audio alerts                               |
+|               |           | 0x04       | Debug 1 (eg live PID)                             |
+|               |           | 0x05       | Debug 2 (eg live PID)                             |
+|               | Command   | 0x10       | Move motors                                       |
+|---------------|-----------|------------|---------------------------------------------------|
+| Arduino –> Pi | Admin     | 0x80       | Error (eg missing expected component)             |
+|               | Telemetry | 0x90       | Motors RPM                                        |
+|               |           | 0x91       | Motors voltage                                    |
+|               |           | 0x92       | Motors current                                    |
+|               |           | 0x93       | Encoder counts (verbose)                          |
+|               |           | 0xA0       | Battery voltage and current                       |
+|               |           | 0xA1       | Battery temperature                               |
+|               |           | 0xB0       | Raw IMU                                           |
+|               |           | 0xB1       | Raw GNSS                                          |
+|---------------|-----------|------------|---------------------------------------------------|
+| Bidirectional | Admin     | 0xFE       | Heartbeat                                         |
 */
 
 #include "serial-control.h"

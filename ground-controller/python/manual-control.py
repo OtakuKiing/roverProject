@@ -2,6 +2,30 @@
 # split into nicer functions - better grouping!
 # test controller inputs
 
+'''
+| Direction     | Category  | Message ID | Content                                           |
+| ------------- | --------- | ---------- | ------------------------------------------------- |
+| Pi -> Arduino | Admin     | 0x00       | Emergency state X - run routine and await command |
+|               |           | 0x01       | Exit emergency state                              |
+|               |           | 0x02       | Toggle verbose telemetry                          |
+|               |           | 0x03       | Toggle audio alerts                               |
+|               |           | 0x04       | Debug 1 (eg live PID)                             |
+|               |           | 0x05       | Debug 2 (eg live PID)                             |
+|               | Command   | 0x10       | Move motors                                       |
+|---------------|-----------|------------|---------------------------------------------------|
+| Arduino -> Pi | Admin     | 0x80       | Error (eg missing expected component)             |
+|               | Telemetry | 0x90       | Motors RPM                                        |
+|               |           | 0x91       | Motors voltage                                    |
+|               |           | 0x92       | Motors current                                    |
+|               |           | 0x93       | Encoder counts (verbose)                          |
+|               |           | 0xA0       | Battery voltage and current                       |
+|               |           | 0xA1       | Battery temperature                               |
+|               |           | 0xB0       | Raw IMU                                           |
+|               |           | 0xB1       | Raw GNSS                                          |
+|---------------|-----------|------------|---------------------------------------------------|
+| Bidirectional | Admin     | 0xFE       | Heartbeat                                         |
+'''
+
 # Example file
 import pygame, serial, time, queue, struct, threading
 import serial.tools.list_ports
@@ -95,7 +119,7 @@ def serialIO():
           packet_In = raw_Ser.read(4)
           if len(packet_In) == 4:  # check if packet is valid
             motor0_RPM = struct.unpack('<f', packet_In)[0]  # convert bytes from array to little-endian float
-            print("Recieved this:", motor0_RPM)
+            print("Recieved from motor0:", motor0_RPM)
           else:
             print("Bad packet! motor0")
 
@@ -148,23 +172,33 @@ try:
       ### keyboard controls ###
       elif event.type == pygame.KEYDOWN:  # send command once on key down
         match event.key:
-          case pygame.K_PAGEUP:  # motor0 fwd full
+          case pygame.K_w:  # fwd full
             serial_Queue.put_nowait(b'\xFF\x01\x00\xFF\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x00\xFF\x00\x00')
 
-          case pygame.K_LEFT:  # motor0 fwd half
-            serial_Queue.put_nowait(b'\xFF\x01\x00\x80\x00\x00')
-
-          case pygame.K_PAGEDOWN:  # motor1 rev full
+          case pygame.K_s:  # rev full
+            serial_Queue.put_nowait(b'\xFF\x01\x01\xFF\x00\x00')
             serial_Queue.put_nowait(b'\xFF\x02\x01\xFF\x00\x00')
 
-          case pygame.K_RIGHT:  # motor1 rev half
-            serial_Queue.put_nowait(b'\xFF\x02\x01\x80\x00\x00')
+          case pygame.K_a:  # sweep left
+            serial_Queue.put_nowait(b'\xFF\x01\x00\x40\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x00\xFF\x00\x00')
 
-      elif event.type == pygame.KEYUP:  # send stop command on key up
-        if event.key in (pygame.K_PAGEUP, pygame.K_LEFT):  # motor0, brk
-            serial_Queue.put_nowait(b'\xFF\x01\x00\x00\x00\x00')
-        elif event.key in (pygame.K_PAGEDOWN, pygame.K_RIGHT):  # motor1, brk
-            serial_Queue.put_nowait(b'\xFF\x02\x00\x00\x00\x00')
+          case pygame.K_d:  # sweep right
+            serial_Queue.put_nowait(b'\xFF\x01\x00\xFF\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x00\x40\x00\x00')
+
+          case pygame.K_q:  # pivot left
+            serial_Queue.put_nowait(b'\xFF\x01\x01\xFF\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x00\xFF\x00\x00')
+
+          case pygame.K_e:  # pivot right
+            serial_Queue.put_nowait(b'\xFF\x01\x00\xFF\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x01\xFF\x00\x00')
+
+      elif event.type == pygame.KEYUP:  # send stop command on any key up
+        serial_Queue.put_nowait(b'\xFF\x01\x00\x00\x00\x00')
+        serial_Queue.put_nowait(b'\xFF\x02\x00\x00\x00\x00')
 
 
     ###	joysticks	###
