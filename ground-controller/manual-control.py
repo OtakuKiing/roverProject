@@ -1,6 +1,7 @@
-# TODO: 
-# split into nicer functions - better grouping!
-# test controller inputs
+# TODO: split into functions - better grouping!
+# add COBS encoding using /x00 as terminator
+# add CRC
+
 
 # Example file
 import pygame, serial, time, queue, struct, threading
@@ -73,7 +74,7 @@ def serialIO():
       packet_Out = serial_Queue.get_nowait()
       if packet_Out is not None:
         raw_Ser.write(packet_Out)
-        print("Sent this:", packet_Out)
+        print("Sent this:", packet_Out)  # debug serial output
         heartbeat1 = time.perf_counter()
       else: break   # sentinel command, exit
     except queue.Empty:
@@ -118,6 +119,7 @@ def serialIO():
         case _:  # ignore bad data
           header = 0
 
+serial_thread = None  # if thread fails to start, finally block still works
 try:
   serial_thread = threading.Thread(target=serialIO, daemon=True)
   serial_thread.start()  # start threaded serial 

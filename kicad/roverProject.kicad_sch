@@ -1638,6 +1638,16 @@
 			(embedded_fonts no)
 		)
 	)
+	(text "Wire colour key:\n\nRed: +12V\nOrange: +5V\nBlack: GND\nBlue: Actuator Direction\nGreen: PWM\nYellow: Encoder A\nWhite: Encoder B\n\n"
+		(exclude_from_sim no)
+		(at 263.652 148.336 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "6c3a56f9-09ff-431f-bee6-a2e079892ad1")
+	)
 	(junction
 		(at 132.08 109.22)
 		(diameter 0)
@@ -1730,6 +1740,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 0 0 0 1)
 			(color 0 0 0 1)
 		)
 		(uuid "12d23af0-e69e-4b78-bd51-ee50acafb029")
@@ -1917,7 +1928,6 @@
 		(stroke
 			(width 0)
 			(type default)
-			(color 0 0 0 1)
 		)
 		(uuid "6bdcffa7-b0e2-4243-8e55-330632abf006")
 	)
@@ -1950,6 +1960,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 0 0 255 1)
 		)
 		(uuid "76130ce1-de0e-4645-8de8-1252b2613057")
 	)
@@ -2049,6 +2060,26 @@
 			(type default)
 			(color 0 0 0 1)
 		)
+		(uuid "aa3a05fe-fdd3-41ca-ac0f-cdeb6afea548")
+	)
+	(wire
+		(pts
+			(xy 158.75 113.03) (xy 179.07 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ac75d36b-6e8c-47be-9adc-13ef74d95f05")
+	)
+	(wire
+		(pts
+			(xy 179.07 115.57) (xy 156.21 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
 		(uuid "bdeecab4-9671-44cc-8f73-e231e6f34271")
 	)
 	(wire
@@ -2069,7 +2100,16 @@
 		(stroke
 			(width 0)
 			(type default)
-			(color 255 255 0 1)
+		)
+		(uuid "c0731387-fa31-4569-a455-b1f6217773bc")
+	)
+	(wire
+		(pts
+			(xy 151.13 96.52) (xy 179.07 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
 		)
 		(uuid "c3c03aef-878c-43ea-b413-d57504e031c4")
 	)
@@ -2113,7 +2153,6 @@
 		(stroke
 			(width 0)
 			(type default)
-			(color 255 0 0 1)
 		)
 		(uuid "d65ce3a0-686b-44df-8bfa-d8f3dba641cb")
 	)
@@ -2124,7 +2163,6 @@
 		(stroke
 			(width 0)
 			(type default)
-			(color 0 0 255 1)
 		)
 		(uuid "dd256273-78ba-418a-bced-f20ef4acebe1")
 	)
@@ -2135,7 +2173,6 @@
 		(stroke
 			(width 0)
 			(type default)
-			(color 0 132 0 1)
 		)
 		(uuid "de595a0d-da4a-48d2-ab84-3761812d2c54")
 	)
@@ -2157,7 +2194,17 @@
 		(stroke
 			(width 0)
 			(type default)
-			(color 255 0 0 1)
+			(color 255 153 0 1)
+		)
+		(uuid "dffc19d2-f5c2-4e93-b026-d2a262a92c2a")
+	)
+	(wire
+		(pts
+			(xy 151.13 104.14) (xy 158.75 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
 		)
 		(uuid "e4ef63b6-1e4a-490c-ba6e-30adc07d56c4")
 	)
@@ -2168,7 +2215,7 @@
 		(stroke
 			(width 0)
 			(type default)
-			(color 255 255 255 1)
+			(color 255 0 0 1)
 		)
 		(uuid "f059a76f-c486-4ddb-87e6-6071d95cb14e")
 	)
@@ -2179,7 +2226,16 @@
 		(stroke
 			(width 0)
 			(type default)
-			(color 0 0 0 1)
+		)
+		(uuid "f8858ddf-cf44-4caa-9a2a-0015369ae572")
+	)
+	(wire
+		(pts
+			(xy 173.99 123.19) (xy 179.07 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
 		)
 		(uuid "f46f7713-c10a-4fc4-8c9e-e3478e48c8ee")
 	)
