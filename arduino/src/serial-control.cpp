@@ -1,29 +1,47 @@
 /* TODO:
 - add crc8 and COBS
-*/
 
-/* ID code table
-| Direction     | Category  | Message ID | Content                                           |
-| ------------- | --------- | ---------- | ------------------------------------------------- |
-| Pi –> Arduino | Admin     | 0x00       | Emergency state X - run routine and await command |
-|               |           | 0x01       | Exit emergency state                              |
-|               |           | 0x02       | Toggle verbose telemetry                          |
-|               |           | 0x03       | Toggle audio alerts                               |
-|               |           | 0x04       | Debug 1 (eg live PID)                             |
-|               |           | 0x05       | Debug 2 (eg live PID)                             |
-|               | Command   | 0x10       | Move motors                                       |
-|---------------|-----------|------------|---------------------------------------------------|
-| Arduino –> Pi | Admin     | 0x80       | Error (eg missing expected component)             |
-|               | Telemetry | 0x90       | Motors RPM                                        |
-|               |           | 0x91       | Motors voltage                                    |
-|               |           | 0x92       | Motors current                                    |
-|               |           | 0x93       | Encoder counts (verbose)                          |
-|               |           | 0xA0       | Battery voltage and current                       |
-|               |           | 0xA1       | Battery temperature                               |
-|               |           | 0xB0       | Raw IMU                                           |
-|               |           | 0xB1       | Raw GNSS                                          |
-|---------------|-----------|------------|---------------------------------------------------|
-| Bidirectional | Admin     | 0xFE       | Heartbeat                                         |
+Packet Structure:
+	current - header, id, data1, data2, data3, data4
+	target - id, data1, data2, ..., dataX, flags, crc8, cobs terminator
+
+Packet parser breakdown:
+	read bytes and place in buffer until 0x00 is read
+	decode cobs
+	check crc8, discard if bad and update packet loss
+	read id
+	read data bytes (length implicit from id, use lookup table)
+	decode flags bitmap
+	execute command
+
+CRC8 breakdown:
+	(crc) xor (next byte)
+	for the next 8 bits (ie loop 8 times), perform bitwise long division w/ no carries:
+		if leading bit of (crc) is 1, shift towards MSB [trim MSB] and then xor with (poly)
+		else just shift
+	return crc
+
+	bool crc8_decoder(uint8_t crc_rx, uint8_t *data_as_array, uint8_t length) {
+		uint8_t crc_calc = 0x00
+		for (uint8_t i = 0; i < length; i++) { // for each byte in data array
+			crc_calc ^= data_as_array[i] // crc_calc = 0x00 xor data byte
+			for (uint8_t j = 0; j < 8; j++) { // for each bit in the byte
+				if (crc_calc & 0x80) { // if binary starts with 1
+					crc_calc = (crc_calc << 1) ^ 0x07 // shift by 1 place then xor with poly 00
+				} else {
+					crc_calc = crc_calc << 1 // else just shift
+				}
+			}
+		}
+		if (crc_rx == crc_calc) {return true} else {return false}
+	}
+
+Flags bitmap
+emergency, verbose, debug, reserved1-5
+e.g. 208 = 11010000 = emergency mode, verbose telemetry, !debug, motor0 forwards, motor1 backwards, spare 1-3
+
+Packet length lookup table
+
 */
 
 #include "serial-control.h"
@@ -38,8 +56,8 @@ uint8_t target_Speed;
 uint8_t prev_Target_Speed;
 Packet prev_Cmd_Out;
 
-bool header = 0;	// 
-int heartbeatIn;  // timer since last valid command
+uint8_t header = 0;	// 
+uint32_t heartbeatIn;  // timer since last valid command
 int heartbeatInterval = 1000;  //how long to wait before executing 'no comms' procedure
 
 void serialInit() {
@@ -54,7 +72,7 @@ void serialRead() {
       header = 1;
       Serial.read();  // eat header byte
       heartbeatIn = millis();  // reset heartbeat timer
-    }
+    } else { Serial.read();} // eat invalid byte
 	}
 
 	if((header == 1) && (Serial.available())) {  // check for valid header and waiting data
@@ -96,7 +114,7 @@ void serialRead() {
 		}
 	}
 
-	int now = millis();
+	uint32_t now = millis();
 	if(now - heartbeatIn > heartbeatInterval) {  // action to take if heartbeat stops
 		motorsKill();
 		digitalWrite(13, HIGH);

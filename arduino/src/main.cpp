@@ -1,9 +1,8 @@
 #include "pch.h"
 
-int motor0_Pid_Speed = 0;
-int motor1_Pid_Speed = 0;
 float motor0_Target_RPM;
 float motor1_Target_RPM;
+Packet p0 = {};
 
 void serialControlInput() {
   serialRead();
@@ -26,9 +25,18 @@ void serialControlInput() {
 }
 
 void serialControlOutput() {
-	Packet packet_Out = {0x01};  // test, motor0 only
-	memcpy(&packet_Out.byte1, &motor0_Target_RPM, sizeof(float));
-	serialWrite(packet_Out);
+	switch (target_Id) {
+		case 0x01:
+			p0.id = {0x01};  // test, unsigned data
+			memcpy(&p0.byte1, &motor0_Target_RPM, sizeof(float));
+			serialWrite(p0);
+			break;
+		case 0x02:
+			p0.id = {0x02};  // test, unsigned data
+			memcpy(&p0.byte1, &motor1_Target_RPM, sizeof(float));
+			serialWrite(p0);
+			break;
+	}
 }
 
 void setup() {

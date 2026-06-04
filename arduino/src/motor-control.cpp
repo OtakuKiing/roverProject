@@ -46,7 +46,7 @@ volatile int motor1_Duration;
 volatile bool motor0_Direction;  // the rotation direction
 volatile bool motor1_Direction;  
 
-unsigned long motors_Before;  // last time motor rpm was checked
+uint32_t motors_Before;  // last time motor rpm was checked
 
 // --- Functions --- //
 
@@ -104,8 +104,8 @@ void encodersInit() {  // initialize encoder pins
 
 void motorsSpeedDistance() {  // get raw motor values and convert to rpm/mps
 
-	unsigned long motors_Now = millis();
-	unsigned long motors_dt = motors_Now - motors_Before;
+	uint32_t motors_Now = millis();
+	uint32_t motors_dt = motors_Now - motors_Before;
 	
 	if(motors_dt >= CALC_RATE_MS) {  // Calculate every >100ms
 		noInterrupts();  // stop duration from being changed during calculations

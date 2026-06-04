@@ -37,12 +37,33 @@ running = True
 pygame.joystick.init()
 joysticks = []
 
-screen = pygame.display.set_mode((320, 200))
+screen = pygame.display.set_mode((640, 400))
 screen.fill((15, 15, 15))  # RGB fill
 pygame.display.flip()  # update screen
 pygame.display.set_caption("Input Window")
 
+font = pygame.font.Font('freesansbold.ttf', 32)
+
+text1 = font.render('W = Forwards, S = Backwards', True, (0,255,0), (0,0,255))
+textRect1 = text1.get_rect()
+textRect1.center = (320, 100)
+
+text2 = font.render('A = Sweep Left, D = Sweep Right', True, (0,255,0), (0,0,255))
+textRect2 = text2.get_rect()
+textRect2.center = (320, 68)
+
+text3 = font.render('Q = Pivot Left, E = Pivot Right', True, (0,255,0), (0,0,255))
+textRect3 = text3.get_rect()
+textRect3.center = (320, 36)
+
+hud = pygame.Surface((640, 400), pygame.SRCALPHA)
+hud.blit(text1, textRect1)
+hud.blit(text2, textRect2)
+hud.blit(text3, textRect3)
+
+
 ### serial setup ###
+
 serial_thread = None
 serial_Queue = queue.Queue()
 prev_Packet_Out = None
@@ -82,6 +103,7 @@ def serialIO():
   header = 0
   packet_Out = b''
   while running:
+    time.sleep(0.001)
     ### serial control	###
     assert raw_Ser is not None
 
@@ -128,6 +150,7 @@ def serialIO():
           packet_In = raw_Ser.read(4)
           if len(packet_In) == 4:  # check if packet is valid
             motor1_RPM = struct.unpack('<f', packet_In)[0]  # convert bytes from array to little-endian float
+            print("Recieved from motor1:", motor1_RPM)
           else: 
             print("Bad packet! motor1")
         
@@ -232,6 +255,21 @@ try:
         serial_Queue.put_nowait(bytes([0xFF, 0x02, target_Dir_R, target_Speed_R]))  # motor1, joystick map
         prev_Speed_R = target_Speed_R
         prev_Dir_R = target_Dir_R
+        
+    # Graphics (potato is temporary, absolute RPM)
+    screen.fill((15, 15, 15))
+
+    pygame.draw.rect(screen, (255,0,0), (340, 400 - motor0_RPM, 100, motor0_RPM))
+    pygame.draw.rect(screen, (255,0,0), (460, 400 - motor1_RPM, 100, motor1_RPM))
+
+    screen.blit(hud, (0, 0))
+
+    rpm0_text = font.render(f"Motor0 RPM: {motor0_RPM:.1f}", True, (255, 255, 255))
+    rpm1_text = font.render(f"Motor1 RPM: {motor1_RPM:.1f}", True, (255, 255, 255))
+    screen.blit(rpm0_text, (10, 330))
+    screen.blit(rpm1_text, (10, 368))
+    pygame.display.flip()
+
     
 finally:
 
