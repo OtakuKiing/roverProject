@@ -141,7 +141,7 @@ def serialIO():
           packet_In = raw_Ser.read(4)
           if len(packet_In) == 4:  # check if packet is valid
             motor0_RPM = struct.unpack('<f', packet_In)[0]  # convert bytes from array to little-endian float
-            print("Recieved from motor0:", motor0_RPM)
+            # print("Recieved from motor0:", motor0_RPM) # debug line
           else:
             print("Bad packet! motor0")
 
@@ -150,7 +150,7 @@ def serialIO():
           packet_In = raw_Ser.read(4)
           if len(packet_In) == 4:  # check if packet is valid
             motor1_RPM = struct.unpack('<f', packet_In)[0]  # convert bytes from array to little-endian float
-            print("Recieved from motor1:", motor1_RPM)
+            # print("Recieved from motor1:", motor1_RPM) # debug line
           else: 
             print("Bad packet! motor1")
         

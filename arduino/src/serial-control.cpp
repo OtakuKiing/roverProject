@@ -58,11 +58,14 @@ Packet prev_Cmd_Out;
 
 uint8_t header = 0;	// 
 uint32_t heartbeatIn;  // timer since last valid command
-int heartbeatInterval = 1000;  //how long to wait before executing 'no comms' procedure
+uint32_t heartbeatInterval = 5000;  //how long to wait before executing 'no comms' procedure
+
+uint32_t lastSerialOut = 0;
+const uint32_t SERIAL_OUT_RATE_MS = 50; // 20Hz, adjust as needed
 
 void serialInit() {
   Serial.begin(115200);
-	heartbeatIn = 0;
+	heartbeatIn = millis();
 }
 
 void serialRead() {
@@ -122,19 +125,22 @@ void serialRead() {
 }
 
 void serialWrite(Packet cmd_Out) {  // write data to the serial bus
-	if ((prev_Cmd_Out.id != cmd_Out.id) || (prev_Cmd_Out.byte1 != cmd_Out.byte1) || (prev_Cmd_Out.byte2 != cmd_Out.byte2) || (prev_Cmd_Out.byte3 != cmd_Out.byte3) || (prev_Cmd_Out.byte4 != cmd_Out.byte4)) {  // only update on change
-		switch (cmd_Out.id) {
-			case 0x00:  // ACK motor kill
-				if (Serial.availableForWrite()) {
-					Serial.write(0xFF); Serial.write(cmd_Out.id);}
-				break;
+	uint32_t now = millis();
+  if (now - lastSerialOut <= SERIAL_OUT_RATE_MS) return;
+	lastSerialOut = now;
+	if (now - heartbeatIn >= heartbeatInterval) return;  // action to take if heartbeat stops
 
-			case 0x01:  // motor0 encoder values
-			case 0x02:  // motor1 encoder values
-				if(Serial.availableForWrite() >= 6) {
-					Serial.write(0xFF); Serial.write((uint8_t*)&cmd_Out, sizeof(cmd_Out));}  // convert Out packet to raw bytes
-				break; 
-			}
-		prev_Cmd_Out = cmd_Out;
-	}
+	switch (cmd_Out.id) {
+		case 0x00:  // ACK motor kill
+			if (Serial.availableForWrite()) {
+				Serial.write(0xFF); Serial.write(cmd_Out.id);}
+			break;
+
+		case 0x01:  // motor0 encoder values
+		case 0x02:  // motor1 encoder values
+			if(Serial.availableForWrite() >= 6) {
+				Serial.write(0xFF); Serial.write((uint8_t*)&cmd_Out, sizeof(cmd_Out));}  // convert Out packet to raw bytes
+			break; 
+		}
+	prev_Cmd_Out = cmd_Out;
 }

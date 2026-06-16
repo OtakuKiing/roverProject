@@ -130,26 +130,22 @@ void motorsSpeedDistance() {  // get raw motor values and convert to rpm/mps
 }
 
 void motor0Move(bool direction, int speed) {  // simple direction and speed controls
-	digitalWrite(MOTOR_0_DIR, direction);
-	analogWrite(MOTOR_0_PWM, speed);
+	  analogWrite(MOTOR_0_PWM, 0);  // kill PWM first
+    digitalWrite(MOTOR_0_DIR, direction);
+    analogWrite(MOTOR_0_PWM, speed);
 }
 
 void motor1Move(bool direction, int speed) {  // simple direction and speed controls
+	analogWrite(MOTOR_1_PWM, 0);  // kill PWM first	
 	digitalWrite(MOTOR_1_DIR, direction);
 	analogWrite(MOTOR_1_PWM, speed);
 }
 
 bool motorsKill() {  // completely cuts power to motors
 	// set all pins to LOW output
-	digitalWrite(MOTOR_0_PWM, LOW);
-	digitalWrite(MOTOR_0_DIR, LOW);
-	digitalWrite(MOTOR_1_PWM, LOW);
-	digitalWrite(MOTOR_1_DIR, LOW);
-
-	// stop pins from having erroneous HIGH output
-	pinMode(MOTOR_0_DIR, INPUT);
-	pinMode(MOTOR_0_PWM, INPUT);
-	pinMode(MOTOR_1_DIR, INPUT);
-	pinMode(MOTOR_1_PWM, INPUT);
+	analogWrite(MOTOR_0_PWM, 0);
+  analogWrite(MOTOR_1_PWM, 0);
+  digitalWrite(MOTOR_0_DIR, LOW);
+  digitalWrite(MOTOR_1_DIR, LOW);
 	return(true);
 }

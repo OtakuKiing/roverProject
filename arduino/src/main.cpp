@@ -3,6 +3,7 @@
 float motor0_Target_RPM;
 float motor1_Target_RPM;
 Packet p0 = {};
+Packet p1 = {};
 
 void serialControlInput() {
   serialRead();
@@ -25,18 +26,13 @@ void serialControlInput() {
 }
 
 void serialControlOutput() {
-	switch (target_Id) {
-		case 0x01:
-			p0.id = {0x01};  // test, unsigned data
-			memcpy(&p0.byte1, &motor0_Target_RPM, sizeof(float));
-			serialWrite(p0);
-			break;
-		case 0x02:
-			p0.id = {0x02};  // test, unsigned data
-			memcpy(&p0.byte1, &motor1_Target_RPM, sizeof(float));
-			serialWrite(p0);
-			break;
-	}
+	p0.id = {0x01};  // test, unsigned data
+	memcpy(&p0.byte1, &motor0_RPM, sizeof(float));
+	serialWrite(p0);
+
+	p1.id = {0x02};  // test, unsigned data
+	memcpy(&p1.byte1, &motor1_RPM, sizeof(float));
+	serialWrite(p1);
 }
 
 void setup() {
