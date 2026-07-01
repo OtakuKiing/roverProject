@@ -2,24 +2,25 @@
 
 /* TODO:
  - Double check the MOTOR_CPR value - 16 or 64?
- - Add simple autonomous functions ie 'forward(distance, speed)'
+ - Add simple autonomous functions ie 'forward(distance, speed)' to a separate file
  - Test best value for CALC_RATE_MS
 */
 
 // --- Declarations --- //
 
-// pins to motor driver board (MDD10A)
-const int MOTOR_0_DIR = 4; 
-const int MOTOR_0_PWM = 5; 
-const int MOTOR_1_DIR = 7; 
-const int MOTOR_1_PWM = 6; 
+// pins to motor driver board (JZK BTS7960B)
+const int MOTOR_0_L_PWM = 5; 
+const int MOTOR_0_R_PWM = 6; 
+const int MOTOR_1_L_PWM = 9; 
+const int MOTOR_1_R_PWM = 10; 
 
 // pins to motor encoders
-// encoder counts are more reliable when pins are interrupt capable
-const int MOTOR_0_ENCA = 2; 
-const int MOTOR_0_ENCB = 8; 
-const int MOTOR_1_ENCA = 3; 
-const int MOTOR_1_ENCB = 9; 
+// encoder counts are more significantly reliable when pins are interrupt capable
+// UNO R3 only has interrupt pins 2 and 3
+const int MOTOR_0_ENCA = 2;  // interrupt
+const int MOTOR_0_ENCB = 4; 
+const int MOTOR_1_ENCA = 3;  // interrupt
+const int MOTOR_1_ENCB = 7; 
 
 // store previous encoder channel for comparison
 byte motor0_EncA_Last;
@@ -83,17 +84,24 @@ void encoder1Raw() {  // convert encoders signals to counts and direction
 }
 
 void motorsInit() {  // initialize motor pins
-	pinMode(MOTOR_0_DIR, OUTPUT);
-	pinMode(MOTOR_0_PWM, OUTPUT);
-	pinMode(MOTOR_1_DIR, OUTPUT);
-	pinMode(MOTOR_1_PWM, OUTPUT);
+	pinMode(MOTOR_0_L_PWM, OUTPUT);
+	pinMode(MOTOR_0_R_PWM, OUTPUT);
+	pinMode(MOTOR_1_L_PWM, OUTPUT);
+	pinMode(MOTOR_1_R_PWM, OUTPUT);
+	analogWrite(MOTOR_0_L_PWM, 0); 
+	analogWrite(MOTOR_0_R_PWM, 0); 
+	analogWrite(MOTOR_1_L_PWM, 0); 
+	analogWrite(MOTOR_1_R_PWM, 0); 
+
 	motors_Before = millis();
 }
 
 void encodersInit() {  // initialize encoder pins
-	pinMode(MOTOR_0_ENCB, INPUT);
+	pinMode(MOTOR_0_ENCA, INPUT_PULLUP);
+	pinMode(MOTOR_1_ENCA, INPUT_PULLUP);
+	pinMode(MOTOR_0_ENCB, INPUT_PULLUP);
 	attachInterrupt(digitalPinToInterrupt(MOTOR_0_ENCA), encoder0Raw, CHANGE);
-	pinMode(MOTOR_1_ENCB, INPUT);
+	pinMode(MOTOR_1_ENCB, INPUT_PULLUP);
 	attachInterrupt(digitalPinToInterrupt(MOTOR_1_ENCA), encoder1Raw, CHANGE);
 
 	motor0_EncA_Last = digitalRead(MOTOR_0_ENCA);
@@ -130,22 +138,28 @@ void motorsSpeedDistance() {  // get raw motor values and convert to rpm/mps
 }
 
 void motor0Move(bool direction, int speed) {  // simple direction and speed controls
-	  analogWrite(MOTOR_0_PWM, 0);  // kill PWM first
-    digitalWrite(MOTOR_0_DIR, direction);
-    analogWrite(MOTOR_0_PWM, speed);
+	// kill PWM first 
+	analogWrite(MOTOR_0_L_PWM, 0); 
+	analogWrite(MOTOR_0_R_PWM, 0); 
+
+	if (direction==0) {analogWrite(MOTOR_0_L_PWM, speed);} 
+	else {analogWrite(MOTOR_0_R_PWM, speed);}
 }
 
 void motor1Move(bool direction, int speed) {  // simple direction and speed controls
-	analogWrite(MOTOR_1_PWM, 0);  // kill PWM first	
-	digitalWrite(MOTOR_1_DIR, direction);
-	analogWrite(MOTOR_1_PWM, speed);
+	// kill PWM first 
+	analogWrite(MOTOR_1_L_PWM, 0); 
+	analogWrite(MOTOR_1_R_PWM, 0); 
+
+	if (direction==0) {analogWrite(MOTOR_1_L_PWM, speed);} 
+	else {analogWrite(MOTOR_1_R_PWM, speed);}
 }
 
 bool motorsKill() {  // completely cuts power to motors
 	// set all pins to LOW output
-	analogWrite(MOTOR_0_PWM, 0);
-  analogWrite(MOTOR_1_PWM, 0);
-  digitalWrite(MOTOR_0_DIR, LOW);
-  digitalWrite(MOTOR_1_DIR, LOW);
+	digitalWrite(MOTOR_0_R_PWM, LOW);
+  digitalWrite(MOTOR_1_R_PWM, LOW);
+  digitalWrite(MOTOR_0_L_PWM, LOW);
+  digitalWrite(MOTOR_1_L_PWM, LOW);
 	return(true);
 }

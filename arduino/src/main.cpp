@@ -2,6 +2,7 @@
 
 float motor0_Target_RPM;
 float motor1_Target_RPM;
+float dummy_Data = 37.0f;  // debug line
 Packet p0 = {};
 Packet p1 = {};
 
