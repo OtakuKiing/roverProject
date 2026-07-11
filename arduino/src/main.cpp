@@ -5,6 +5,7 @@ float motor1_Target_RPM;
 float dummy_Data = 37.0f;  // debug line
 Packet p0 = {};
 Packet p1 = {};
+Packet p2 = {};
 
 void serialControlInput() {
   serialRead();
@@ -34,19 +35,25 @@ void serialControlOutput() {
 	p1.id = {0x02};  // test, unsigned data
 	memcpy(&p1.byte1, &motor1_RPM, sizeof(float));
 	serialWrite(p1);
+
+	p2.id = {0x81};  // test, unsigned data
+	memcpy(&p2.byte1, &imu_Accel.x, sizeof(float));
+	serialWrite(p2);
 }
 
 void setup() {
   motorsInit();
   encodersInit();
   serialInit();
+	imuInit();
   pinMode(LED_PIN, OUTPUT);  // onboard LED has no pwm
 }
 
 void loop() {
+	imuGetData();
+	//shake(1);
 	motorsSpeedDistance();	// update all motor values
 
 	serialControlInput();  // read serial
 	serialControlOutput();  // write to serial
-
 }

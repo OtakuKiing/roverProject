@@ -61,7 +61,7 @@ uint32_t heartbeatIn;  // timer since last valid command
 uint32_t heartbeatInterval = 5000;  //how long to wait before executing 'no comms' procedure
 
 uint32_t lastSerialOut = 0;
-const uint32_t SERIAL_OUT_RATE_MS = 50; // 20Hz, adjust as needed
+const uint32_t SERIAL_OUT_RATE_MS = 20; // 50Hz, adjust as needed
 
 void serialInit() {
   Serial.begin(115200);
@@ -138,6 +138,7 @@ void serialWrite(Packet cmd_Out) {  // write data to the serial bus
 
 		case 0x01:  // motor0 encoder values
 		case 0x02:  // motor1 encoder values
+		case 0x81:
 			if(Serial.availableForWrite() >= 6) {
 				Serial.write(0xFF); Serial.write((uint8_t*)&cmd_Out, sizeof(cmd_Out));}  // convert Out packet to raw bytes
 			break; 

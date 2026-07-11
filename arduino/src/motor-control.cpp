@@ -11,8 +11,8 @@
 // pins to motor driver board (JZK BTS7960B)
 const int MOTOR_0_L_PWM = 5; 
 const int MOTOR_0_R_PWM = 6; 
-const int MOTOR_1_L_PWM = 9; 
-const int MOTOR_1_R_PWM = 10; 
+const int MOTOR_1_R_PWM = 9; 
+const int MOTOR_1_L_PWM = 10; 
 
 // pins to motor encoders
 // encoder counts are more significantly reliable when pins are interrupt capable
@@ -142,6 +142,7 @@ void motor0Move(bool direction, int speed) {  // simple direction and speed cont
 	analogWrite(MOTOR_0_L_PWM, 0); 
 	analogWrite(MOTOR_0_R_PWM, 0); 
 
+	speed = speed * 0.6;  // m1 is broken? half speed to match limits
 	if (direction==0) {analogWrite(MOTOR_0_L_PWM, speed);} 
 	else {analogWrite(MOTOR_0_R_PWM, speed);}
 }
@@ -151,6 +152,7 @@ void motor1Move(bool direction, int speed) {  // simple direction and speed cont
 	analogWrite(MOTOR_1_L_PWM, 0); 
 	analogWrite(MOTOR_1_R_PWM, 0); 
 
+	//speed = speed / 2;
 	if (direction==0) {analogWrite(MOTOR_1_L_PWM, speed);} 
 	else {analogWrite(MOTOR_1_R_PWM, speed);}
 }

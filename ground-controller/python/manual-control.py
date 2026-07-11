@@ -36,31 +36,27 @@ running = True
 
 pygame.joystick.init()
 joysticks = []
-SHEIGHT = 400
-SWIDTH = 640
-screen = pygame.display.set_mode((SWIDTH, SHEIGHT))
-screen.fill((100, 100, 100))  # RGB fill
+
+screen = pygame.display.set_mode((640, 400))
+screen.fill((15, 15, 15))  # RGB fill
 pygame.display.flip()  # update screen
 pygame.display.set_caption("Input Window")
 
-font = pygame.font.SysFont("Calibri", 20)
+font = pygame.font.Font('freesansbold.ttf', 32)
 
-text1 = font.render('W = Forwards, S = Backwards', False, (255,255,255), (70,70,70))
+text1 = font.render('W = Forwards, S = Backwards', True, (0,255,0), (0,0,255))
 textRect1 = text1.get_rect()
-textRect1.center = (480, 60)
+textRect1.center = (320, 100)
 
-text2 = font.render('A = Sweep Left, D = Sweep Right', False, (255,255,255), (70,70,70))
+text2 = font.render('A = Sweep Left, D = Sweep Right', True, (0,255,0), (0,0,255))
 textRect2 = text2.get_rect()
-textRect2.center = (493, 40)
+textRect2.center = (320, 68)
 
-text3 = font.render('Q = Pivot Left, E = Pivot Right', False, (255,255,255), (70,70,70))
+text3 = font.render('Q = Pivot Left, E = Pivot Right', True, (0,255,0), (0,0,255))
 textRect3 = text3.get_rect()
-textRect3.center = (480, 20)
+textRect3.center = (320, 36)
 
-bgRect = pygame.Rect(360, 0, 300, (textRect1.height+textRect2.height+textRect3.height)+20)
-
-hud = pygame.Surface((SWIDTH, SHEIGHT), pygame.SRCALPHA)
-pygame.draw.rect(hud, (70,70, 70), bgRect)
+hud = pygame.Surface((640, 400), pygame.SRCALPHA)
 hud.blit(text1, textRect1)
 hud.blit(text2, textRect2)
 hud.blit(text3, textRect3)
@@ -96,6 +92,7 @@ prev_Dir_R = 0
 motor0_RPM = 0.0
 motor1_RPM = 0.0
 
+imu = 0.0
 
 def serialSendUrgent(packet_Out):  # drain the queue
     while not serial_Queue.empty():
@@ -158,6 +155,15 @@ def serialIO():
             # print("Recieved from motor1:", motor1_RPM) # debug line
           else: 
             print("Bad packet! motor1")
+            
+        case b'\x81':  # motor1 data
+          header = 0
+          packet_In = raw_Ser.read(4)
+          if len(packet_In) == 4:  # check if packet is valid
+            imu = struct.unpack('<f', packet_In)[0]  # convert bytes from array to little-endian float
+            print("Recieved from imu:", imu) # debug line
+          else: 
+            print("Bad packet! motor1")
         
         case b'\xFE':  # heartbeat ACK
           awaiting_ACK = False
@@ -209,20 +215,36 @@ try:
             serial_Queue.put_nowait(b'\xFF\x02\x01\xFF\x00\x00')
 
           case pygame.K_a:  # sweep left
-            serial_Queue.put_nowait(b'\xFF\x01\x00\x40\x00\x00')
-            serial_Queue.put_nowait(b'\xFF\x02\x00\xFF\x00\x00')
-
-          case pygame.K_d:  # sweep right
             serial_Queue.put_nowait(b'\xFF\x01\x00\xFF\x00\x00')
             serial_Queue.put_nowait(b'\xFF\x02\x00\x40\x00\x00')
 
+          case pygame.K_d:  # sweep right
+            serial_Queue.put_nowait(b'\xFF\x01\x00\x40\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x00\xFF\x00\x00')
+
           case pygame.K_q:  # pivot left
+            serial_Queue.put_nowait(b'\xFF\x01\x00\xFF\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x01\xFF\x00\x00')
+
+          case pygame.K_e:  # pivot right
             serial_Queue.put_nowait(b'\xFF\x01\x01\xFF\x00\x00')
             serial_Queue.put_nowait(b'\xFF\x02\x00\xFF\x00\x00')
 
-          case pygame.K_e:  # pivot right
-            serial_Queue.put_nowait(b'\xFF\x01\x00\xFF\x00\x00')
-            serial_Queue.put_nowait(b'\xFF\x02\x01\xFF\x00\x00')
+          case pygame.K_i:  # fwd hf
+            serial_Queue.put_nowait(b'\xFF\x01\x00\x80\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x00\x80\x00\x00')
+
+          case pygame.K_k:  # rev hf
+            serial_Queue.put_nowait(b'\xFF\x01\x01\x80\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x01\x80\x00\x00')
+
+          case pygame.K_j:  # pivot hf
+            serial_Queue.put_nowait(b'\xFF\x01\x00\x80\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x01\x80\x00\x00')
+
+          case pygame.K_l:  # pivot hf
+            serial_Queue.put_nowait(b'\xFF\x01\x01\x80\x00\x00')
+            serial_Queue.put_nowait(b'\xFF\x02\x00\x80\x00\x00')
 
       elif event.type == pygame.KEYUP:  # send stop command on any key up
         serial_Queue.put_nowait(b'\xFF\x01\x00\x00\x00\x00')
@@ -261,50 +283,19 @@ try:
         prev_Speed_R = target_Speed_R
         prev_Dir_R = target_Dir_R
         
-# Graphics (potato is temporary, absolute RPM)
-screen.fill((100, 100, 100))
+    # Graphics (potato is temporary, absolute RPM)
+    screen.fill((15, 15, 15))
 
-while running == True:
-  
+    pygame.draw.rect(screen, (255,0,0), (340, 400 - motor0_RPM, 100, motor0_RPM))
+    pygame.draw.rect(screen, (255,0,0), (460, 400 - motor1_RPM, 100, motor1_RPM))
 
-  rpm0bgRect = pygame.Rect(10, 10, 100, 360)
-  rpm1bgRect = pygame.Rect(180, 10, 100, 360)
-  rpm0rect = pygame.Rect(10, 200 - motor0_RPM, 100, motor0_RPM)
-  rpm1rect = pygame.Rect(180, 200 - motor1_RPM, 100, motor1_RPM)
-  rpm0rect.normalize() #Flips direction of rectange if negative
-  rpm1rect.normalize()
-  
+    screen.blit(hud, (0, 0))
 
-  pygame.draw.rect(screen, (70,70,70), rpm0bgRect)
-  pygame.draw.rect(screen, (70,70,70), rpm1bgRect)
-
-  #Bounding rpm rectangle within bg rectangle
-  if rpm0rect.y < 0 and abs(rpm0rect.y) >= rpm0bgRect.y:
-    rpm0rectnew = pygame.Rect(10, rpm0bgRect.top, 100, (motor0_RPM + (200-motor0_RPM)))
-    pygame.draw.rect(screen, (255,0,0), rpm0rectnew)
-  elif rpm0rect.bottom > rpm0bgRect.bottom:
-    rpm0rectnew = pygame.Rect(10, 200, 100, 170)
-    pygame.draw.rect(screen, (255,0,0), rpm0rectnew)
-  else:
-    pygame.draw.rect(screen, (255,0,0), rpm0rect)
-
-  if rpm1rect.y < 0 and abs(rpm1rect.y) >= rpm1bgRect.y:
-    rpm1rectnew = pygame.Rect(180, rpm1bgRect.top, 100, (motor1_RPM + (200-motor1_RPM)))
-    pygame.draw.rect(screen, (255,0,0), rpm1rectnew)
-  elif rpm1rect.bottom > rpm1bgRect.bottom:
-    rpm1rectnew = pygame.Rect(180, 200, 100, 170)
-    pygame.draw.rect(screen, (255,0,0), rpm1rectnew)
-  else:
-    pygame.draw.rect(screen, (255,0,0), rpm1rect)
-    
-  
-  screen.blit(hud, (0, 0))
-
-  rpm0_text = font.render(f"Motor0 RPM: {motor0_RPM:1f}", False, (255, 255, 255))
-  rpm1_text = font.render(f"Motor1 RPM: {motor1_RPM:1f}", False, (255, 100, 100))
-  screen.blit(rpm0_text, (10, 380))
-  screen.blit(rpm1_text, (180, 380))
-  pygame.display.flip()
+    rpm0_text = font.render(f"Motor0 RPM: {motor0_RPM:.1f}", True, (255, 255, 255))
+    rpm1_text = font.render(f"Motor1 RPM: {motor1_RPM:.1f}", True, (255, 255, 255))
+    screen.blit(rpm0_text, (10, 330))
+    screen.blit(rpm1_text, (10, 368))
+    pygame.display.flip()
 
     
 finally:
@@ -320,4 +311,3 @@ finally:
 
   print("Closing safely...")
   pygame.quit()
-  
