@@ -261,52 +261,52 @@ try:
         prev_Speed_R = target_Speed_R
         prev_Dir_R = target_Dir_R
         
-# Graphics (potato is temporary, absolute RPM)
-screen.fill((100, 100, 100))
+  # Graphics (potato is temporary, absolute RPM)
+  screen.fill((100, 100, 100))
 
-while running == True:
-  
-
-  rpm0bgRect = pygame.Rect(10, 10, 100, 360)
-  rpm1bgRect = pygame.Rect(180, 10, 100, 360)
-  rpm0rect = pygame.Rect(10, 200 - motor0_RPM, 100, motor0_RPM)
-  rpm1rect = pygame.Rect(180, 200 - motor1_RPM, 100, motor1_RPM)
-  rpm0rect.normalize() #Flips direction of rectange if negative
-  rpm1rect.normalize()
-  
-
-  pygame.draw.rect(screen, (70,70,70), rpm0bgRect)
-  pygame.draw.rect(screen, (70,70,70), rpm1bgRect)
-
-  #Bounding rpm rectangle within bg rectangle
-  if rpm0rect.y < 0 and abs(rpm0rect.y) >= rpm0bgRect.y:
-    rpm0rectnew = pygame.Rect(10, rpm0bgRect.top, 100, (motor0_RPM + (200-motor0_RPM)))
-    pygame.draw.rect(screen, (255,0,0), rpm0rectnew)
-  elif rpm0rect.bottom > rpm0bgRect.bottom:
-    rpm0rectnew = pygame.Rect(10, 200, 100, 170)
-    pygame.draw.rect(screen, (255,0,0), rpm0rectnew)
-  else:
-    pygame.draw.rect(screen, (255,0,0), rpm0rect)
-
-  if rpm1rect.y < 0 and abs(rpm1rect.y) >= rpm1bgRect.y:
-    rpm1rectnew = pygame.Rect(180, rpm1bgRect.top, 100, (motor1_RPM + (200-motor1_RPM)))
-    pygame.draw.rect(screen, (255,0,0), rpm1rectnew)
-  elif rpm1rect.bottom > rpm1bgRect.bottom:
-    rpm1rectnew = pygame.Rect(180, 200, 100, 170)
-    pygame.draw.rect(screen, (255,0,0), rpm1rectnew)
-  else:
-    pygame.draw.rect(screen, (255,0,0), rpm1rect)
+  while running == True:
     
-  
-  screen.blit(hud, (0, 0))
 
-  rpm0_text = font.render(f"Motor0 RPM: {motor0_RPM:1f}", False, (255, 255, 255))
-  rpm1_text = font.render(f"Motor1 RPM: {motor1_RPM:1f}", False, (255, 100, 100))
-  screen.blit(rpm0_text, (10, 380))
-  screen.blit(rpm1_text, (180, 380))
-  pygame.display.flip()
-
+    rpm0bgRect = pygame.Rect(10, 10, 100, 360)
+    rpm1bgRect = pygame.Rect(180, 10, 100, 360)
+    rpm0rect = pygame.Rect(10, 200 - motor0_RPM, 100, motor0_RPM)
+    rpm1rect = pygame.Rect(180, 200 - motor1_RPM, 100, motor1_RPM)
+    rpm0rect.normalize() #Flips direction of rectange if negative
+    rpm1rect.normalize()
     
+
+    pygame.draw.rect(screen, (70,70,70), rpm0bgRect)
+    pygame.draw.rect(screen, (70,70,70), rpm1bgRect)
+
+    #Bounding rpm rectangle within bg rectangle
+    if rpm0rect.y < 0 and abs(rpm0rect.y) >= rpm0bgRect.y:
+      rpm0rectnew = pygame.Rect(10, rpm0bgRect.top, 100, (motor0_RPM + (200-motor0_RPM)))
+      pygame.draw.rect(screen, (255,0,0), rpm0rectnew)
+    elif rpm0rect.bottom > rpm0bgRect.bottom:
+      rpm0rectnew = pygame.Rect(10, 200, 100, 170)
+      pygame.draw.rect(screen, (255,0,0), rpm0rectnew)
+    else:
+      pygame.draw.rect(screen, (255,0,0), rpm0rect)
+
+    if rpm1rect.y < 0 and abs(rpm1rect.y) >= rpm1bgRect.y:
+      rpm1rectnew = pygame.Rect(180, rpm1bgRect.top, 100, (motor1_RPM + (200-motor1_RPM)))
+      pygame.draw.rect(screen, (255,0,0), rpm1rectnew)
+    elif rpm1rect.bottom > rpm1bgRect.bottom:
+      rpm1rectnew = pygame.Rect(180, 200, 100, 170)
+      pygame.draw.rect(screen, (255,0,0), rpm1rectnew)
+    else:
+      pygame.draw.rect(screen, (255,0,0), rpm1rect)
+      
+    
+    screen.blit(hud, (0, 0))
+
+    rpm0_text = font.render(f"Motor0 RPM: {motor0_RPM:1f}", False, (255, 255, 255))
+    rpm1_text = font.render(f"Motor1 RPM: {motor1_RPM:1f}", False, (255, 100, 100))
+    screen.blit(rpm0_text, (10, 380))
+    screen.blit(rpm1_text, (180, 380))
+    pygame.display.flip()
+
+      
 finally:
 
   serial_Queue.put(None)

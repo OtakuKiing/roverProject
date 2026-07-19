@@ -1,52 +1,48 @@
 #include "pch.h"
 
-float motor0_Target_RPM;
-float motor1_Target_RPM;
-float dummy_Data = 37.0f;  // debug line
-Packet p0 = {};
-Packet p1 = {};
-
-void serialControlInput() {
-  serialRead();
-
-	switch (target_Id) {
-		case 0x00:
-			motorsKill();
-			break;
-
-		case 0x01:
-			motor0_Target_RPM = (float)target_Speed * 251.0f / 255.0f;
-			motor0Move(target_Dir, target_Speed);
-			break;
-
-		case 0x02:
-			motor1_Target_RPM = (float)target_Speed * 251.0f / 255.0f;
-			motor1Move(target_Dir, target_Speed);
-			break;
-	}
-}
-
-void serialControlOutput() {
-	p0.id = {0x01};  // test, unsigned data
-	memcpy(&p0.byte1, &motor0_RPM, sizeof(float));
-	serialWrite(p0);
-
-	p1.id = {0x02};  // test, unsigned data
-	memcpy(&p1.byte1, &motor1_RPM, sizeof(float));
-	serialWrite(p1);
-}
-
 void setup() {
-  motorsInit();
-  encodersInit();
-  serialInit();
-  pinMode(LED_PIN, OUTPUT);  // onboard LED has no pwm
+	motor0.begin(motor0ISR);
+	motor1.begin(motor1ISR);
+
+	sei();
+
+	Serial.begin(115200);
+	timer.set(3000);
+	motor0.setRPM(100);
+	motor1.setRPM(100);	
 }
 
 void loop() {
-	motorsSpeedDistance();	// update all motor values
+	motorKinematics();
 
-	serialControlInput();  // read serial
-	serialControlOutput();  // write to serial
+	if (timer.A_ready) {
+		timer.A_ready = false;
+		Serial.print(timer.timerCounter);
+		Serial.println(" Interrupt! Timer done.");
 
+		switch (timer.timerCounter) {
+			case 0:
+				break;
+			case 1:
+				motor0.setRPM(200); 	
+				motor1.setRPM(200);
+				timer.set(2000);
+				break;
+			case 2:
+				motor0.stop();
+				motor1.setRPM(200);
+				timer.set(2000);
+				break;
+			case 3:
+				motor0.setRPM(200);
+				motor1.setRPM(50);
+				timer.set(2000);
+				break;
+			case 4:
+				motor0.stop();
+				motor1.stop();
+				timer.set(2000);
+				break;
+		}
+	}
 }
